@@ -1,13 +1,13 @@
 const { Client } = require("@elastic/elasticsearch");
                    require("dotenv").config();
 
-const elastic    = new Client({ node: process.env.ELASTIC_NODE });
+const esclient   = new Client({ node: process.env.ELASTIC_NODE });
 const index      = "articles"
 const type       = "article"
 
 async function createArticlesIndex(index) {
   try {
-    await elastic.indices.create({ index });
+    await esclient.indices.create({ index });
     console.log(`Created index ${index}`);
   } catch (err) {
     console.error(`An error occurred while creating the index ${index}:`);
@@ -22,17 +22,17 @@ async function setArticlesMapping() {
         type: "integer"
       },
       title: {
-        type: "text"
+        type: "keyword"
       },
       subtitle: {
-        type: "text"
+        type: "string"
       },
       article_body: {
-        type: "text"
+        type: "string"
       }
     }
 
-    await elastic.indices.putMapping({ 
+    await esclient.indices.putMapping({ 
       index, 
       type,
       include_type_name: true,
@@ -55,7 +55,7 @@ function checkConnection() {
     while (!isConnected) {
       try {
         // eslint-disable-next-line no-await-in-loop
-        await elastic.cluster.health({});
+        await esclient.cluster.health({});
         console.log("Successfully connected to ElasticSearch");
         isConnected = true;
       // eslint-disable-next-line no-empty
@@ -84,7 +84,7 @@ function insertArticle(article) {
       }
     ];
     
-    elastic.index({
+    esclient.index({
       index,
       type,
       id: article.id,
@@ -99,7 +99,7 @@ function insertArticle(article) {
 }
 
 module.exports = {
-  elastic,
+  esclient,
   index,
   type,
   setArticlesMapping,
